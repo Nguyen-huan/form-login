@@ -1,4 +1,5 @@
 <?php
+  session_start();
   include "main.php";
 ?>
 <style>
@@ -71,7 +72,7 @@
                     type="submit"
                     class="form-control btn btn-primary submit px-3"
                   >
-                    Sign In
+                    Login
                   </button>
                 </div>
                 <div class="form-group d-md-flex">
