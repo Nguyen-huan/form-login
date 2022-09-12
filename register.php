@@ -1,8 +1,7 @@
 <?php
-  session_start();
   include "connect.php";
   $error = "";
-  if(isset($_POST["username"]) && isset($_POST["password"])){
+  if(isset($_POST["username"]) && isset($_POST["password1"]) && isset($_POST["password2"])){
     function validate($data){
       $data = trim($data);
       $data = stripcslashes($data);
@@ -10,55 +9,79 @@
       return $data;
     }
     $username = validate($_POST["username"]);
-    $password = validate($_POST["password"]);
+    $name = validate($_POST["name"]);
+    $email = validate($_POST["email"]);
+    $password1 = validate($_POST["password1"]);
+    $password2 = validate($_POST["password2"]);
     if(empty($username)){
-      header("Location: login.php?error=User Name is required");
+      header("Location: register.php?error=User Name is required");
       $GLOBALS['error'] = "Username Error";
       exit();
     }
-    else if(empty($password)){
-      header("Location: login.php?error=Password is required");
+    else if(empty($name)){
+      header("Location: register.php?error=Name is required");
+      $GLOBALS['error'] = "Password Again Error";
+      exit();
+    }
+    else if(empty($email)){
+      header("Location: register.php?error=email is required");
+      $GLOBALS['error'] = "Password Again Error";
+      exit();
+    }
+    else if(empty($password1)){
+      header("Location: register.php?error=Password1 is required");
       $GLOBALS['error'] = "Password Error";
       exit();
     }
+    else if(empty($password2)){
+      header("Location: register.php?error=Password2 is required");
+      $GLOBALS['error'] = "Password Again Error";
+      exit();
+    }
+    
+    else if($password1 !== $password2){
+      header("Location: register.php?error=Input Password Again Is Not Same Input First Password");
+      $GLOBALS['error'] = "Input Password Again Is Not Same Input First Password";
+      exit();
+    }
     else{
-      $saltPassword = md5($password);
-      $sql = "SELECT * FROM users WHERE user_name = '$username' AND password = '$saltPassword'";
+      $sql = "SELECT * FROM users WHERE user_name = '$username' OR email = '$email'";
+      // Thực thi câu truy vấn
       $result = mysqli_query($conn, $sql);
-      if(mysqli_num_rows($result)===1){
-        $row = mysqli_fetch_assoc($result);
-        if($row["user_name"]=== $username && $row['password']=== $saltPassword){
-          $_SESSION['id'] = $row['id'];
-          $_SESSION['user_name'] = $row['user_name'];
-          $_SESSION['password'] = $row['password'];
-          $_SESSION['name'] = $row['name'];
-          $_SESSION['admin'] = $row['is_Admin'];
-          // var_dump($row['is_Admin']);
-          if($row['is_Admin']==1){
-            header("Location: manager_admin.php");
-          }
-          else{
-            header("Location: home.php");
-          }
-          // var_dump($_SESSION);
-        }
-      }
-      else{
-        header("Location: login.php?error=Incorect Username or Password");
+
+      // Nếu kết quả trả về lớn hơn 1 thì nghĩa là username hoặc email đã tồn tại trong CSDL
+      if (mysqli_num_rows($result) > 0)
+      {
+        header("Location: register.php?error=Username has already existed");
+        $GLOBALS['error'] = "Username has already existed";
         exit();
+        // Dừng chương trình
+        die ();
+      }
+      else {
+        $saltPassword = md5($password1);
+        $sql = "INSERT INTO users (user_name, password, email, name, is_Admin ) VALUES ('$username','$saltPassword','$email','$name',0)";
+        echo '<script language="javascript">alert("Successful!"); window.location="register.php";</script>';
+        if (mysqli_query($conn, $sql)){
+          header('Location: login.php');
+        }
+        else {
+          echo '<script language="javascript">alert("Có lỗi trong quá trình xử lý"); window.location="register.php";</script>';
+        }
       }
     }
   }
 ?>
 <style>
   .error {
+    width: 350px;
     color: #fbceb5 !important; margin-bottom: 20px; margin-top: -10px; margin-left: 20px;
   }
 </style>
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Login 10</title>
+    <title>Register</title>
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -101,9 +124,31 @@
                     
                   />
                 </div>
+
                 <div class="form-group">
                   <input
-                    name="password"
+                    name="name"
+                    type="text"
+                    class="form-control"
+                    placeholder="Name"
+                    
+                  />
+                </div>
+
+                <div class="form-group">
+                  <input
+                    name="email"
+                    id="email-field"
+                    type="email"
+                    class="form-control"
+                    placeholder="Email"
+                    
+                  />
+                </div>
+
+                <div class="form-group">
+                  <input
+                    name="password1"
                     id="password-field"
                     type="password"
                     class="form-control"
@@ -117,14 +162,28 @@
                 </div>
 
                 <div class="form-group">
+                  <input
+                    name="password2"
+                    id="password-field"
+                    type="password"
+                    class="form-control"
+                    placeholder="Password Again"
+                    
+                  />
+                  <span
+                    toggle="#password-field"
+                    class="fa fa-fw fa-eye field-icon toggle-password"
+                  ></span>
+                </div>
+
+                <div class="form-group">
                   <button
                     type="submit"
                     class="form-control btn btn-primary submit px-3"
                   >
-                    Login
+                    Register
                   </button>
                 </div>
-
                 <div class="form-group d-md-flex">
                   <div class="w-50">
                     <label class="checkbox-wrap checkbox-primary"
@@ -134,7 +193,7 @@
                     </label>
                   </div>
                   <div class="w-50 text-md-right">
-                    <a href="register.php" style="color: #fff">Register</a>
+                    <a href="login.php" style="color: #fff">Login</a>
                   </div>
                 </div>
               </form>
