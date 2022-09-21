@@ -35,7 +35,7 @@
           $_SESSION['admin'] = $row['is_Admin'];
           // var_dump($row['is_Admin']);
           if($row['is_Admin']==1){
-            header("Location: CRUD_employee.php");
+            header("Location: CRUD_employee/employeeList.php");
           }
           else{
             header("Location: home.php");
