@@ -35,7 +35,7 @@
           $_SESSION['admin'] = $row['is_Admin'];
           // var_dump($row['is_Admin']);
           if($row['is_Admin']==1){
-            header("Location: manager_admin.php");
+            header("Location: CRUD_employee.php");
           }
           else{
             header("Location: home.php");
@@ -48,6 +48,7 @@
         exit();
       }
     }
+    mysqli_close($conn);
   }
 ?>
 <style>
